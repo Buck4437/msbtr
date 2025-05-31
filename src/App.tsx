@@ -162,12 +162,12 @@ function App() {
         {solution.map((node, i) => {
           return (
             <div className="solution-card">
-              <span>{i === 0 ? "Initial" : `Step ${i}`}</span>
+              <span>{i === solution.length - 1 ? "Done" : `Step ${i + 1}`}</span>
               <PuzzleState 
                 key={i}
                 state={node.state}
                 mutable={false}
-                highlighted={node.playerPos}
+                highlighted={i < solution.length - 1 ? solution[i + 1].playerPos : -1}
                 mini={true}
               />
             </div>
