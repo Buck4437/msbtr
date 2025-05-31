@@ -13,32 +13,34 @@ type QueueNode = [Node, Array<Node>]
 type PuzzleNodeState = 0 | 1 | 2;
 
 function PuzzleState({
-  initialState,
+  state,
   mutable,
+  mini = false,
   handler = () => {},
   highlighted = -1
 }: { 
-  initialState: PuzzleNodeState[], 
+  state: PuzzleNodeState[], 
   mutable: boolean, 
+  mini?: boolean,
   handler?: Function
   highlighted?: number
 }) {
 
   return (
-    <div className="puzzle-state">
+    <div className={`puzzle-state ${mini && "mini"}`}>
       {
-        initialState.map((x: PuzzleNodeState, i: number) => {
+        state.map((x: PuzzleNodeState, i: number) => {
           const colour = ["red", "blue", "yellow"][x]
           if (mutable) {
             return (
               <button 
                 key={i} 
-                className={`puzzle-node btn-${i} ${colour} ${highlighted == i && "highlighted"}`}
+                className={`puzzle-node btn-${i} ${colour} ${highlighted === i && "highlighted"}`}
                 onClick={() => handler(i)}></button>
             )
           }
           return (
-            <div key={i} className={`puzzle-node btn-${i} ${colour} highlighted`}></div>
+            <div key={i} className={`puzzle-node btn-${i} ${colour} ${highlighted === i && "highlighted"}`}></div>
           )
         })
       }
@@ -115,6 +117,8 @@ function App() {
   }
 
   const [initialState, setInitialState] = useState(new Array(6).fill(0) as PuzzleNodeState[]);
+  const [threshold, setThreshold] = useState("4");
+  const [solution, setSolution] = useState([] as Node[]);
 
   const updateState = function(index: number) {
     const newState = [...initialState];
@@ -122,10 +126,54 @@ function App() {
     setInitialState(newState);
   }
 
+  const updateThreshold = function(val: string) {
+    setThreshold(val);
+  }
+
+  const submitJob = function() {
+    let val = Number(threshold);
+    
+    if (Number.isNaN(val)) {
+      alert("Invalid threshold");
+    } else {
+      const solution = solveFromState(initialState, val);
+
+      if (solution === null) {
+        setSolution([]);     
+        alert("No solution");
+      } else {
+        setSolution(solution);
+      }
+    }
+  }
+
   return (
     <>  
-      <PuzzleState initialState={initialState} mutable={true} handler={updateState}/>
-      Target: <input></input> <button>Solve!</button>
+      <div className="puzzle-selector-wrapper">
+        <PuzzleState state={initialState} mutable={true} handler={updateState}/>
+      </div>
+      <p>
+        Target: <input
+            type="number"
+            value={threshold}
+            onChange={(e) => updateThreshold(e.target.value)}/> <button onClick={submitJob}>Solve!</button>
+      </p>
+      <div className="solution-wrapper">
+        {solution.map((node, i) => {
+          return (
+            <div className="solution-card">
+              <span>{i === 0 ? "Initial" : `Step ${i}`}</span>
+              <PuzzleState 
+                key={i}
+                state={node.state}
+                mutable={false}
+                highlighted={node.playerPos}
+                mini={true}
+              />
+            </div>
+          )
+        })}
+      </div>
     </>
   )
 }
