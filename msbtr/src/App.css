@@ -1,42 +1,95 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+.puzzle-state {
+  position: relative;
+  border: 2px solid black;
+  border-radius: 40px;
+  width: 330px;
+  height: 330px;
+  padding: 16px;
+  --node-spread: 140px;
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
+  .puzzle-node {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+    width: 60px;
+    height: 60px;
+    border: 2px solid white;
+    border-radius: 30px;
   }
-  to {
-    transform: rotate(360deg);
+
+  button.puzzle-node:hover {
+    cursor: pointer;
   }
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  .puzzle-node.btn-0 {
+    transform: translate(-50%, -50%) rotate(0deg) translate(var(--node-spread));
   }
+
+  .puzzle-node.btn-1 {
+    transform: translate(-50%, -50%) rotate(60deg) translate(var(--node-spread));
+  }
+
+  .puzzle-node.btn-2 {
+    transform: translate(-50%, -50%) rotate(120deg) translate(var(--node-spread));
+  }
+
+  .puzzle-node.btn-3 {
+    transform: translate(-50%, -50%) rotate(180deg) translate(var(--node-spread));
+  }
+
+  .puzzle-node.btn-4 {
+    transform: translate(-50%, -50%) rotate(240deg) translate(var(--node-spread));
+  }
+
+  .puzzle-node.btn-5 {
+    transform: translate(-50%, -50%) rotate(300deg) translate(var(--node-spread));
+  }
+
+  .puzzle-node.red {
+    background-color: #f66767;
+  }
+
+  button.puzzle-node.red:hover {
+    background-color: #d05858;
+  }
+
+  .puzzle-node.blue {
+    background-color: #3988ff;
+  }
+
+  button.puzzle-node.blue:hover {
+    background-color: #3170cf;
+  }
+
+  .puzzle-node.yellow {
+    background-color: #eff888;
+  }
+
+  button.puzzle-node.yellow:hover {
+    background-color: #dce380;
+  }
+
+  .puzzle-node.highlighted {
+    border: 2px solid yellow;
+    box-shadow: 0 0 10px 10px rgba(255, 255, 0, 0.35);
+  }
+
 }
 
-.card {
-  padding: 2em;
-}
+.puzzle-state.mini {
+  width: 200px;
+  height: 200px;
+  --node-spread: 90px;
 
-.read-the-docs {
-  color: #888;
+  .puzzle-node {
+    width: 40px;
+    height: 40px;
+    border: none;
+  }
+
+  .puzzle-node.highlighted {
+    border: 2px solid yellow;
+  }
 }

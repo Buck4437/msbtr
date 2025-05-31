@@ -1,33 +1,131 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+// Red (Kita) = 0, Blue (Ryo) = 1, Yellow (Nijika) = 2
+// Cycle: R -> B -> Y -> R
+
+type Node = {
+  state: Array<PuzzleNodeState>,
+  playerPos: number
+}
+
+type QueueNode = [Node, Array<Node>]
+type PuzzleNodeState = 0 | 1 | 2;
+
+function PuzzleState({
+  initialState,
+  mutable,
+  handler = () => {},
+  highlighted = -1
+}: { 
+  initialState: PuzzleNodeState[], 
+  mutable: boolean, 
+  handler?: Function
+  highlighted?: number
+}) {
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+    <div className="puzzle-state">
+      {
+        initialState.map((x: PuzzleNodeState, i: number) => {
+          const colour = ["red", "blue", "yellow"][x]
+          if (mutable) {
+            return (
+              <button 
+                key={i} 
+                className={`puzzle-node btn-${i} ${colour} ${highlighted == i && "highlighted"}`}
+                onClick={() => handler(i)}></button>
+            )
+          }
+          return (
+            <div key={i} className={`puzzle-node btn-${i} ${colour} highlighted`}></div>
+          )
+        })
+      }
+    </div>
+  )
+}
+
+function App() {
+
+  function solveFromState(initialState: PuzzleNodeState[], threshold: number) {
+
+    const generateNeighbours = function (node: Node) {
+        const neighbours = []
+        for (let i = 0; i < 6; i++) {
+            if (i == node.playerPos) continue;
+            let neighbourState = node.state.map(
+                (a, j) => (
+                    // Only changes neighbour of selected node
+                    [1, -1, 5, -5].includes(i - j) ? (a + 1) % 3 : a
+                ) as PuzzleNodeState
+            );
+            neighbours.push({
+              state: neighbourState, 
+              playerPos: i
+            });
+        }
+        return neighbours;
+    }
+
+    const isSolved = function(node: Node) {
+        const dict = [0, 0, 0];
+        for (let item of node.state) {
+            dict[item]++;
+            if (dict[item] >= threshold) return true;
+        }
+        return false;
+    }
+
+    const initialNode: Node = {
+      state: initialState,
+      playerPos: -1,
+    }
+
+    // Solve the puzzle using BFS
+    const visited = new Set()
+    const queue: QueueNode[] = []
+    queue.push([
+        initialNode, 
+        [] // Stores previous states
+    ]);
+
+    while (queue.length > 0) {
+      let shifted = queue.shift();
+      if (!shifted) continue;
+
+      let [node, history] = shifted;
+      let nodeStr = `${node.state.join(" ")} ${node.playerPos}`; 
+
+      if (!visited.has(nodeStr)) {
+        visited.add(nodeStr);
+        if (isSolved(node)) {
+          return history.concat(node);
+        }
+
+        const newHistory = history.concat(node);
+        const neighbours = generateNeighbours(node);
+        for (let neighbour of neighbours) {
+          const nextNode: QueueNode = [neighbour, newHistory];
+          queue.push(nextNode);
+        }
+      }
+    }
+    return null;
+  }
+
+  const [initialState, setInitialState] = useState(new Array(6).fill(0) as PuzzleNodeState[]);
+
+  const updateState = function(index: number) {
+    const newState = [...initialState];
+    newState[index] = (newState[index] + 1) % 3 as PuzzleNodeState;
+    setInitialState(newState);
+  }
+
+  return (
+    <>  
+      <PuzzleState initialState={initialState} mutable={true} handler={updateState}/>
+      Target: <input></input> <button>Solve!</button>
     </>
   )
 }
